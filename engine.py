@@ -50,7 +50,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
         with torch.cuda.amp.autocast():
             outputs = model(samples)
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs.sigmoid(), targets)
 
         loss_value = loss.item()
 
@@ -93,7 +93,10 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 @torch.no_grad()
 def evaluate(data_loader, model, device):
-    criterion = torch.nn.BCEWithLogitsLoss()
+    from util.loss_function import BinaryDiceLoss
+    criterion = BinaryDiceLoss
+
+    # criterion = torch.nn.BCEWithLogitsLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -110,7 +113,7 @@ def evaluate(data_loader, model, device):
         # compute output
         with torch.cuda.amp.autocast():
             output = model(images)
-            loss = criterion(output, target)
+            loss = criterion(output.sigmoid(), target)
 
         logits = torch.sigmoid(output)
         labels = logits.clone()

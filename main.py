@@ -34,6 +34,7 @@ from util.datafunction import MedData_train
 from engine import train_one_epoch, evaluate
 import timm.optim.optim_factory as optim_factory
 
+
 def get_args_parser():
     parser = argparse.ArgumentParser('Medical segmentation ', add_help=False)
     parser.add_argument('--batch_size', default=1, type=int,
@@ -236,7 +237,10 @@ def main(args):
 
     loss_scaler = NativeScaler()
 
-    criterion = torch.nn.BCEWithLogitsLoss()
+
+    from util.loss_function import BinaryDiceLoss
+    criterion = BinaryDiceLoss
+    # criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
     misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)
