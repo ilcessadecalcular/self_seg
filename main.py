@@ -198,6 +198,14 @@ def main(args):
     from model.twoD.config import HRNet18
     model = get_seg_model(HRNet18, in_feat=HRNet18.DATASET.NUM_CLASSES).to(device)
 
+    if args.resume:
+        checkpoint = torch.load(args.resume, map_location='cpu')
+        print("Continue train checkpoint from: %s" % args.resume)
+        # load resume model
+        msg = model.load_state_dict(checkpoint, strict=False)
+        print(msg)
+
+
 
     model.to(device)
 
