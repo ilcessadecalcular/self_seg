@@ -196,7 +196,7 @@ def main(args):
 
     from model.twoD.OnlyHRNet import get_seg_model
     from model.twoD.config import HRNet18
-    model = get_seg_model(HRNet18, in_feat=HRNet8.DATASET.NUM_CLASSES).to(device)
+    model = get_seg_model(HRNet18, in_feat=HRNet18.DATASET.NUM_CLASSES).to(device)
 
 
     model.to(device)

@@ -37,7 +37,9 @@ class MedData_train(torch.utils.data.Dataset):
         znorm_source_arrary = self.znorm(source_array)
         crop_source_arrary, crop_label_array = self.rand_crop(znorm_source_arrary,label_array)
         out_source_array = crop_source_arrary[:, np.newaxis]
+        out_source_array = torch.FloatTensor(out_source_array)
         out_label_array = crop_label_array[:, np.newaxis]
+        out_label_array = torch.FloatTensor(out_label_array)
         return out_source_array,out_label_array
 
 

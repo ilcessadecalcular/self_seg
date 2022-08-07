@@ -117,7 +117,7 @@ def evaluate(data_loader, model, device):
         labels[labels > 0.5] = 1
         labels[labels <= 0.5] = 0
 
-        dice = dice_func(output, labels)
+        dice = dice_func(labels, target)
 
         batch_size = images.shape[0]
         metric_logger.update(loss=loss.item())
