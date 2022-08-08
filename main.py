@@ -44,15 +44,15 @@ def get_args_parser():
                         help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
 
     parser.add_argument('--epochs', default=200, type=int)
-    parser.add_argument('--accum_iter', default=5, type=int,
+    parser.add_argument('--accum_iter', default=1, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
 
 
 
-    # Model parameters
-    parser.add_argument('--model', default='vit_large_patch16', type=str, metavar='MODEL',
-                        help='Name of model to train')
+    # # Model parameters
+    # parser.add_argument('--model', default='vit_large_patch16', type=str, metavar='MODEL',
+    #                     help='Name of model to train')
 
     # Optimizer parameters
     parser.add_argument('--clip_grad', type=float, default=None, metavar='NORM',
@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir',
+    parser.add_argument('--output_dir', default='./output_dir_bceloss',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir',
+    parser.add_argument('--log_dir', default='./output_dir_bceloss',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -150,8 +150,8 @@ def main(args):
 
     cudnn.benchmark = True
 
-    dataset_train = MedData_train(args.train_source_dir,args.train_label_dir,args.crop_size)
-    dataset_val = MedData_train(args.valid_source_dir,args.valid_label_dir,args.crop_size)
+    dataset_train = MedData_train(args.train_source_dir,args.train_label_dir)
+    dataset_val = MedData_train(args.valid_source_dir,args.valid_label_dir)
 
     if True:  # args.distributed:
         num_tasks = misc.get_world_size()
@@ -196,8 +196,8 @@ def main(args):
     )
 
     from model.twoD.OnlyHRNet import get_seg_model
-    from model.twoD.config import HRNet18
-    model = get_seg_model(HRNet18, in_feat=HRNet18.DATASET.NUM_CLASSES).to(device)
+    from model.twoD.config import HRNet16
+    model = get_seg_model(HRNet16, in_feat=HRNet16.DATASET.NUM_CLASSES).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -238,9 +238,9 @@ def main(args):
     loss_scaler = NativeScaler()
 
 
-    from util.loss_function import BinaryDiceLoss
-    criterion = BinaryDiceLoss
-    # criterion = torch.nn.BCEWithLogitsLoss()
+    from util.loss_function import SoftDiceLoss, BCELoss2d
+    # criterion = SoftDiceLoss()
+    criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
     misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)
@@ -259,7 +259,7 @@ def main(args):
         train_stats = train_one_epoch(
             model, criterion, data_loader_train,
             optimizer, device, epoch, loss_scaler,
-            args.clip_grad,
+            args.clip_grad, args.crop_size,
             log_writer=log_writer,
             args=args
         )

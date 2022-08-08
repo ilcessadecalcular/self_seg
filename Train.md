@@ -1,7 +1,7 @@
 
 python -m torch.distributed.launch --nproc_per_node=2 main.py \
     --batch_size 1 \
-    --crop_size 250 \
+    --crop_size 200 \
     --epochs 400 \
     --warmup_epochs 100 \
     --blr 1.5e-3 \

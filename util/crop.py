@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import math
-
+import random
 import torch
 
 from torchvision import transforms
@@ -40,3 +40,11 @@ class RandomResizedCrop(transforms.RandomResizedCrop):
         j = torch.randint(0, width - w + 1, size=(1,)).item()
 
         return i, j, h, w
+
+def rand_crop(image,label,crop_size):
+    _, t, _, _, _ =label.size()
+    new_t = random.randint(0, t - crop_size)
+
+    image = image[:,new_t: new_t + crop_size,:,:,:]
+    label = label[:, new_t: new_t + crop_size, :, :, :]
+    return image,label

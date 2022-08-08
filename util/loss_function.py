@@ -251,11 +251,16 @@ class SoftDiceLoss(nn.Module):
 
     def forward(self, logits, targets):
         num = targets.size(0)
+        # print(num)
         smooth = 1
 
         probs = F.sigmoid(logits)
+        # m1 = probs
         m1 = probs.view(num, -1)
+        # print(m1.size())
         m2 = targets.view(num, -1)
+        # print(m2.size())
+        # m2 = targets
         intersection = (m1 * m2)
 
         score = 2. * (intersection.sum(1) + smooth) / (m1.sum(1) + m2.sum(1) + smooth)

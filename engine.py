@@ -19,11 +19,12 @@ from util.metric import dice_func
 
 import util.misc as misc
 import util.lr_sched as lr_sched
-
+from util.crop import rand_crop
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, loss_scaler, max_norm: float = 0,
+                    crop_size: int = 50,
                     log_writer=None,
                     args=None):
     model.train(True)
@@ -45,15 +46,19 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
 
+        samples, targets = rand_crop(samples,targets,crop_size)
+
         samples = samples.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
 
         with torch.cuda.amp.autocast():
             outputs = model(samples)
-            loss = criterion(outputs.sigmoid(), targets)
-
+            loss = criterion(outputs, targets)
+            # print(loss)
         loss_value = loss.item()
-
+        # print(samples.size)
+        # print(outputs.size())
+        # print(targets.size())
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             sys.exit(1)
@@ -93,10 +98,10 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 @torch.no_grad()
 def evaluate(data_loader, model, device):
-    from util.loss_function import BinaryDiceLoss
-    criterion = BinaryDiceLoss
+    from util.loss_function import SoftDiceLoss, BCELoss2d
+    # criterion = SoftDiceLoss()
 
-    # criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = torch.nn.BCEWithLogitsLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -112,14 +117,22 @@ def evaluate(data_loader, model, device):
 
         # compute output
         with torch.cuda.amp.autocast():
-            output = model(images)
-            loss = criterion(output.sigmoid(), target)
+            images1 = images[:,:300,:,:,:]
+            output1 = model(images1)
+            images2 = images[:,300:,:,:,:]
+            output2 = model(images2)
+            output = torch.cat((output1,output2),1)
+            loss = criterion(output, target)
 
         logits = torch.sigmoid(output)
+        # print(output)
+        # print(logits)
         labels = logits.clone()
         labels[labels > 0.5] = 1
         labels[labels <= 0.5] = 0
-
+        # print(labels)
+        # print(logits.sum())
+        # print(labels.sum())
         dice = dice_func(labels, target)
 
         batch_size = images.shape[0]
