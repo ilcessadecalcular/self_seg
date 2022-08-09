@@ -250,7 +250,7 @@ class SoftDiceLoss(nn.Module):
         super(SoftDiceLoss, self).__init__()
 
     def forward(self, logits, targets):
-        num = targets.size(0)
+        num = targets.size(1)
         # print(num)
         smooth = 1
 

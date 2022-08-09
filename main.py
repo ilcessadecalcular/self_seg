@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_bceloss',
+    parser.add_argument('--output_dir', default='./output_dir_diceloss2',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_bceloss',
+    parser.add_argument('--log_dir', default='./output_dir_diceloss2',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -239,8 +239,8 @@ def main(args):
 
 
     from util.loss_function import SoftDiceLoss, BCELoss2d
-    # criterion = SoftDiceLoss()
-    criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = SoftDiceLoss()
+    # criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
     misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)
@@ -269,9 +269,9 @@ def main(args):
                 loss_scaler=loss_scaler, epoch=epoch)
 
         test_stats = evaluate(data_loader_val, model, device)
-        print(f"Dice of the network on the {len(dataset_val)} test images: {test_stats['dice']:.1f}%")
+        print(f"Dice of the network on the {len(dataset_val)} test images: {test_stats['dice']:.3f}%")
         max_dice = max(max_dice, test_stats["dice"])
-        print(f'Max dice: {max_dice:.2f}%')
+        print(f'Max dice: {max_dice:.3f}%')
 
 
         if log_writer is not None:
