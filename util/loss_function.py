@@ -278,3 +278,35 @@ class BCELoss2d(nn.Module):
         probs_flat = probs.view(-1)
         targets_flat = targets.view(-1)
         return self.bce_loss(probs_flat, targets_flat)
+
+class DiceCeloss(nn.Module):
+    def __init__(self, weight=None, size_average=True,lambda_dice: float = 1.0,
+        lambda_ce: float = 1.0):
+        super(DiceCeloss, self).__init__()
+
+        self.bcel = nn.BCEWithLogitsLoss()
+        self.dice = SoftDiceLoss(weight,size_average)
+
+        if lambda_dice < 0.0:
+            raise ValueError("lambda_dice should be no less than 0.0.")
+        if lambda_ce < 0.0:
+            raise ValueError("lambda_ce should be no less than 0.0.")
+        self.lambda_dice = lambda_dice
+        self.lambda_ce = lambda_ce
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            input: the shape should be BNH[WD].
+            target: the shape should be BNH[WD] or B1H[WD].
+
+        Raises:
+            ValueError: When number of dimensions for input and target are different.
+            ValueError: When number of channels for target is neither 1 nor the same as input.
+
+        """
+        dice_loss = self.dice(input, target)
+        ce_loss = self.bcel(input, target)
+        total_loss: torch.Tensor = self.lambda_dice * dice_loss + self.lambda_ce * ce_loss
+
+        return total_loss
