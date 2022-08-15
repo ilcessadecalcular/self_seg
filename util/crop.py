@@ -41,7 +41,16 @@ class RandomResizedCrop(transforms.RandomResizedCrop):
 
         return i, j, h, w
 
-def rand_crop(image,label,crop_size):
+def rand_crop_flow(image_array,image,label,crop_size):
+    _, t, _, _, _ =label.size()
+    new_t = random.randint(0, t - crop_size)
+
+    image_array = image_array[:,new_t: new_t + crop_size,:,:,:]
+    image = image[:,new_t: new_t + crop_size,:,:,:]
+    label = label[:, new_t: new_t + crop_size, :, :, :]
+    return image_array,image,label
+
+def rand_crop_onlycnn(image,label,crop_size):
     _, t, _, _, _ =label.size()
     new_t = random.randint(0, t - crop_size)
 
