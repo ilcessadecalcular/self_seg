@@ -16,10 +16,10 @@ from typing import Iterable, Optional
 import torch
 
 from util.metric import dice_func
-
+from util.datafunction import z_norm,normalize_hu
 import util.misc as misc
 import util.lr_sched as lr_sched
-from util.crop import rand_crop
+from util.crop import rand_crop_onlycnn
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -46,7 +46,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
 
-        samples, targets = rand_crop(samples,targets,crop_size)
+        samples, targets = rand_crop_onlycnn(samples, targets,crop_size)
 
         samples = samples.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
@@ -54,11 +54,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         with torch.cuda.amp.autocast():
             outputs = model(samples)
             loss = criterion(outputs, targets)
-            # print(loss)
+
         loss_value = loss.item()
-        # print(samples.size)
-        # print(outputs.size())
-        # print(targets.size())
+
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             sys.exit(1)
@@ -112,6 +110,7 @@ def evaluate(data_loader, model, device):
     for batch in metric_logger.log_every(data_loader, 5, header):
         images = batch[0]
         target = batch[-1]
+
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
 

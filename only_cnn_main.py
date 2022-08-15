@@ -29,9 +29,9 @@ from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 import util.lr_decay as lrd
 import util.misc as misc
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
-from util.datafunction import MedData_train
+from util.datafunction import MedData_train_onlycnn
 
-from engine import train_one_epoch, evaluate
+from only_cnn_engine import train_one_epoch, evaluate
 import timm.optim.optim_factory as optim_factory
 
 
@@ -150,8 +150,8 @@ def main(args):
 
     cudnn.benchmark = True
 
-    dataset_train = MedData_train(args.train_source_dir,args.train_label_dir)
-    dataset_val = MedData_train(args.valid_source_dir,args.valid_label_dir)
+    dataset_train = MedData_train_onlycnn(args.train_source_dir,args.train_label_dir)
+    dataset_val = MedData_train_onlycnn(args.valid_source_dir,args.valid_label_dir)
 
     if True:  # args.distributed:
         num_tasks = misc.get_world_size()
