@@ -78,45 +78,45 @@ class cnnflowNet(nn.Module):
         self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
 
-    def compute_flow(self, lrs):
-        """Compute optical flow using SPyNet for feature warping.
-
-        Note that if the input is an mirror-extended sequence, 'flows_forward'
-        is not needed, since it is equal to 'flows_backward.flip(1)'.
-
-        Args:
-            lrs (tensor): Input LR images with shape (n, t, c, h, w)
-
-        Return:
-            tuple(Tensor): Optical flow. 'flows_forward' corresponds to the
-                flows used for forward-time propagation (current to previous).
-                'flows_backward' corresponds to the flows used for
-                backward-time propagation (current to next).
-        """
-
-        n, t, c, h, w = lrs.size()
-        lrs_input =lrs[0,:,0,:,:]
-
-        dis = cv2.DISOpticalFlow_create(2)  # PRESET_ULTRAFAST, PRESET_FAST and PRESET_MEDIUM
-
-        flows_forward = []
-        flows_backward = []
-        for i in range(t):
-            if i == 0:
-                flow_backward = None
-            else:
-                flow_backward = dis.calc(lrs_input[i],lrs_input[i-1], None)
-                flow_backward = flow_backward.unsqueeze(0)
-            if i == t-1:
-                flow_forward = None
-            else:
-                flow_forward = dis.calc(lrs_input[i], lrs_input[i+1], None)
-                flow_forward = flow_forward.unsqueeze(0)
-
-            flows_forward.append(flow_forward)
-            flows_backward.append(flow_backward)
-
-        return flows_forward, flows_backward
+    # def compute_flow(self, lrs):
+    #     """Compute optical flow using SPyNet for feature warping.
+    #
+    #     Note that if the input is an mirror-extended sequence, 'flows_forward'
+    #     is not needed, since it is equal to 'flows_backward.flip(1)'.
+    #
+    #     Args:
+    #         lrs (tensor): Input LR images with shape (n, t, c, h, w)
+    #
+    #     Return:
+    #         tuple(Tensor): Optical flow. 'flows_forward' corresponds to the
+    #             flows used for forward-time propagation (current to previous).
+    #             'flows_backward' corresponds to the flows used for
+    #             backward-time propagation (current to next).
+    #     """
+    #
+    #     n, t, c, h, w = lrs.size()
+    #     lrs_input =lrs[0,:,0,:,:]
+    #
+    #     dis = cv2.DISOpticalFlow_create(2)  # PRESET_ULTRAFAST, PRESET_FAST and PRESET_MEDIUM
+    #
+    #     flows_forward = []
+    #     flows_backward = []
+    #     for i in range(t):
+    #         if i == 0:
+    #             flow_backward = None
+    #         else:
+    #             flow_backward = dis.calc(lrs_input[i],lrs_input[i-1], None)
+    #             flow_backward = flow_backward.unsqueeze(0)
+    #         if i == t-1:
+    #             flow_forward = None
+    #         else:
+    #             flow_forward = dis.calc(lrs_input[i], lrs_input[i+1], None)
+    #             flow_forward = flow_forward.unsqueeze(0)
+    #
+    #         flows_forward.append(flow_forward)
+    #         flows_backward.append(flow_backward)
+    #
+    #     return flows_forward, flows_backward
 
     def compute_feature(self, lrs_array):
         """Compute optical flow using SPyNet for feature warping.
@@ -141,7 +141,7 @@ class cnnflowNet(nn.Module):
         return up_feature
 
 
-    def forward(self, lrs, lrs_array):
+    def forward(self, lrs_array, flows_forward, flows_backward):
         """Forward function for BasicVSR.
 
         Args:
@@ -151,14 +151,14 @@ class cnnflowNet(nn.Module):
             Tensor: Output segmentation sequence with shape (n, t, c, h, w).
         """
 
-        n, t, c, h, w = lrs.size()
+        n, t, c, h, w = lrs_array.size()
 
         # compute optical flow
-        flows_forward, flows_backward = self.compute_flow(lrs)
+        # flows_forward, flows_backward = self.compute_flow(lrs_array)
         up_feature = self.compute_feature(lrs_array)
         # backward-time propgation
         outputs = []
-        feat_prop = lrs.new_zeros(n, self.mid_channels*2, h, w)
+        feat_prop = lrs_array.new_zeros(n, self.mid_channels*2, h, w)
         for i in range(t - 1, -1, -1):
             if i < t - 1:  # no warping required for the last timestep
                 flow = flows_backward[:, i, :, :, :]

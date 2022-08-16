@@ -40,22 +40,22 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     if log_writer is not None:
         print('log_dir: {}'.format(log_writer.log_dir))
 
-    for data_iter_step, (samples, targets) in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
+    for data_iter_step, (samples, targets,flows_forward, flows_backward) in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
 
         # we use a per iteration (instead of per epoch) lr scheduler
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
-        samples_img = samples.clone()
-        samples = z_norm(samples)
-        samples, samples_img, targets = rand_crop_flow(samples, samples_img, targets,crop_size)
-        samples_img = normalize_hu(samples_img)
+
+        samples, targets, flows_forward,flows_backward = rand_crop_flow(samples, targets, flows_forward,flows_backward)
+
 
         samples = samples.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
-        samples_img = samples_img.to(device, non_blocking=True)
+        flows_forward = flows_forward.to(device, non_blocking=True)
+        flows_backward = flows_backward.to(device, non_blocking=True)
 
         with torch.cuda.amp.autocast():
-            outputs = model(samples_img,samples)
+            outputs = model(samples,flows_forward,flows_backward )
             loss = criterion(outputs, targets)
             # print(loss)
         loss_value = loss.item()
@@ -114,23 +114,25 @@ def evaluate(data_loader, model, device):
 
     for batch in metric_logger.log_every(data_loader, 5, header):
         images = batch[0]
-        target = batch[-1]
-
-        images_img = images.clone()
-        images = z_norm(images)
-        images_img = normalize_hu(images_img)
+        target = batch[1]
+        flows_forward = batch[2]
+        flows_backward = batch[3]
+        n, t, c, h, w = images.size()
 
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
-        images_img = images_img.to(device, non_blocking=True)
+        flows_forward = flows_forward.to(device, non_blocking=True)
+        flows_backward = flows_backward.to(device, non_blocking=True)
         # compute output
         with torch.cuda.amp.autocast():
             images1 = images[:,:300,:,:,:]
-            images_img1 = images_img[:,:300,:,:,:]
-            output1 = model(images_img1, images1)
+            flows_forward = flows_forward[:,:299,:,:,:]
+            flows_backward = flows_backward[:, :299, :, :, :]
+            output1 = model(images1,flows_forward,flows_backward)
             images2 = images[:,300:,:,:,:]
-            images_img2 = images_img[:, :300, :, :, :]
-            output2 = model(images_img2, images2)
+            flows_forward = flows_forward[:, 300: t-1, :, :, :]
+            flows_backward = flows_backward[:, 300: t - 1, :, :, :]
+            output2 = model(images2,flows_forward,flows_backward)
             output = torch.cat((output1,output2),1)
             loss = criterion(output, target)
 

@@ -3,6 +3,7 @@ import SimpleITK as sitk
 import torch
 import random
 import numpy as np
+import cv2
 
 class MedData_train_onlycnn(torch.utils.data.Dataset):
     def __init__(self, source_dir, label_dir):
@@ -45,6 +46,55 @@ class MedData_train_flow(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.patient_dir)
 
+    def normalize_hu(self,image):
+        # 将输入图像的像素值(200 ~ 600)归一化到0~1之间
+        image = image.numpy()
+        MIN_BOUND = 200
+        MAX_BOUND = 600
+        image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
+        image[image > 1] = 1.
+        image[image < 0] = 0.
+        return (image * 255).astype(np.uint8)
+
+    def compute_flow(self, lrs):
+        """Compute optical flow using SPyNet for feature warping.
+
+        Note that if the input is an mirror-extended sequence, 'flows_forward'
+        is not needed, since it is equal to 'flows_backward.flip(1)'.
+
+        Args:
+            lrs (tensor): Input LR images with shape (n, t, c, h, w)
+
+        Return:
+            tuple(Tensor): Optical flow. 'flows_forward' corresponds to the
+                flows used for forward-time propagation (current to previous).
+                'flows_backward' corresponds to the flows used for
+                backward-time propagation (current to next).
+        """
+
+        t, h, w = lrs.size()
+        lrs_input = self.normalize_hu(lrs)
+
+        dis = cv2.DISOpticalFlow_create(2)  # PRESET_ULTRAFAST, PRESET_FAST and PRESET_MEDIUM
+
+        flows_forward = []
+        flows_backward = []
+        for i in range(t):
+            if i == 0:
+                flow_backward = None
+            else:
+                flow_backward = dis.calc(lrs_input[i],lrs_input[i-1], None)
+                flow_backward = torch.FloatTensor(flow_backward)
+                flows_backward.append(flow_backward)
+            if i == t-1:
+                flow_forward = None
+            else:
+                flow_forward = dis.calc(lrs_input[i], lrs_input[i+1], None)
+                flow_forward = torch.FloatTensor(flow_forward)
+                flows_forward.append(flow_forward)
+
+        return torch.stack(flows_forward, dim=0), torch.stack(flows_backward, dim=0)
+
     def znorm(self, image):
         mn = image.mean()
         sd = image.std()
@@ -58,11 +108,13 @@ class MedData_train_flow(torch.utils.data.Dataset):
         source_array = sitk.GetArrayFromImage(image_source)
         image_label = sitk.ReadImage(label_path)
         label_array = sitk.GetArrayFromImage(image_label)
-        out_source_array = source_array[:, np.newaxis]
+        flows_forward , flows_backward = self.compute_flow(source_array)
+        znorm_source_array = self.znorm(source_array)
+        out_source_array = znorm_source_array[:, np.newaxis]
         out_source_array = torch.FloatTensor(out_source_array)
         out_label_array = label_array[:, np.newaxis]
         out_label_array = torch.FloatTensor(out_label_array)
-        return out_source_array,out_label_array
+        return out_source_array,out_label_array,flows_forward,flows_backward
 
 
 def z_norm(image):
