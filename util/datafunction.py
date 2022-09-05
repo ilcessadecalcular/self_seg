@@ -48,7 +48,6 @@ class MedData_train_flow(torch.utils.data.Dataset):
 
     def normalize_hu(self,image):
         # 将输入图像的像素值(200 ~ 600)归一化到0~1之间
-        image = image.numpy()
         MIN_BOUND = 200
         MAX_BOUND = 600
         image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
@@ -72,7 +71,7 @@ class MedData_train_flow(torch.utils.data.Dataset):
                 backward-time propagation (current to next).
         """
 
-        t, h, w = lrs.size()
+        t, h, w = lrs.shape
         lrs_input = self.normalize_hu(lrs)
 
         dis = cv2.DISOpticalFlow_create(2)  # PRESET_ULTRAFAST, PRESET_FAST and PRESET_MEDIUM
