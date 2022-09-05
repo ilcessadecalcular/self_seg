@@ -45,9 +45,9 @@ class cnnflowNet(nn.Module):
 
         # propagation branches
         self.backward_resblocks = ResidualBlocksWithInputConv(
-            mid_channels*3, mid_channels, num_blocks)
+            mid_channels*3, mid_channels*2, num_blocks)
         self.forward_resblocks = ResidualBlocksWithInputConv(
-            mid_channels*3, mid_channels, num_blocks)
+            mid_channels*3, mid_channels*2, num_blocks)
 
         # upsample
         self.upsample = nn.Sequential(
@@ -62,7 +62,7 @@ class cnnflowNet(nn.Module):
 
         # last
         self.last = nn.Sequential(
-            nn.Conv2d(mid_channels, mid_channels, 3, 1, 1),
+            nn.Conv2d(mid_channels * 2 , mid_channels, 3, 1, 1),
             BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             nn.Conv2d(mid_channels, mid_channels, 3, 1, 1),
@@ -72,7 +72,7 @@ class cnnflowNet(nn.Module):
         )
 
         self.fusion = nn.Conv2d(
-            mid_channels * 2, mid_channels, 1, 1, 0, bias=True)
+            mid_channels * 4, mid_channels * 2, 1, 1, 0, bias=True)
 
         # activation function
         self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)

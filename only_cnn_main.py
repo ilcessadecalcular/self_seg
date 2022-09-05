@@ -196,8 +196,8 @@ def main(args):
     )
 
     from model.twoD.OnlyHRNet import get_seg_model
-    from model.twoD.config import HRNet32
-    model = get_seg_model(HRNet32, in_feat=HRNet32.DATASET.NUM_CLASSES).to(device)
+    from model.twoD.config import HRNet8
+    model = get_seg_model(HRNet8, in_feat=HRNet8.DATASET.NUM_CLASSES).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')

@@ -46,7 +46,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
 
-        samples, targets, flows_forward,flows_backward = rand_crop_flow(samples, targets, flows_forward,flows_backward)
+        samples, targets, flows_forward,flows_backward = rand_crop_flow(samples, targets, flows_forward,flows_backward,crop_size)
 
 
         samples = samples.to(device, non_blocking=True)
@@ -101,9 +101,9 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 @torch.no_grad()
 def evaluate(data_loader, model, device):
-    from util.loss_function import SoftDiceLoss, BCELoss2d
-    criterion = SoftDiceLoss()
-
+    from util.loss_function import SoftDiceLoss, BCELoss2d, DiceCeloss
+    criterion = DiceCeloss()
+    # criterion = SoftDiceLoss()
     # criterion = torch.nn.BCEWithLogitsLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")
@@ -117,7 +117,7 @@ def evaluate(data_loader, model, device):
         target = batch[1]
         flows_forward = batch[2]
         flows_backward = batch[3]
-        n, t, c, h, w = images.size()
+        # n, t, c, h, w = images.size()
 
         images = images.to(device, non_blocking=True)
         target = target.to(device, non_blocking=True)
@@ -125,15 +125,16 @@ def evaluate(data_loader, model, device):
         flows_backward = flows_backward.to(device, non_blocking=True)
         # compute output
         with torch.cuda.amp.autocast():
-            images1 = images[:,:300,:,:,:]
-            flows_forward = flows_forward[:,:299,:,:,:]
-            flows_backward = flows_backward[:, :299, :, :, :]
-            output1 = model(images1,flows_forward,flows_backward)
-            images2 = images[:,300:,:,:,:]
-            flows_forward = flows_forward[:, 300: t-1, :, :, :]
-            flows_backward = flows_backward[:, 300: t - 1, :, :, :]
-            output2 = model(images2,flows_forward,flows_backward)
-            output = torch.cat((output1,output2),1)
+            # images1 = images[:,:300,:,:,:]
+            # flows_forward1 = flows_forward[:,:299,:,:,:]
+            # flows_backward1 = flows_backward[:, :299, :, :, :]
+            # output1 = model(images1,flows_forward1,flows_backward1)
+            # images2 = images[:,300:,:,:,:]
+            # flows_forward2 = flows_forward[:, 300: , :, :, :]
+            # flows_backward2 = flows_backward[:, 300: , :, :, :]
+            # output2 = model(images2,flows_forward2,flows_backward2)
+            # output = torch.cat((output1,output2),1)
+            output = model(images,flows_forward,flows_backward)
             loss = criterion(output, target)
 
         logits = torch.sigmoid(output)

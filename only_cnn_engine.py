@@ -116,11 +116,12 @@ def evaluate(data_loader, model, device):
 
         # compute output
         with torch.cuda.amp.autocast():
-            images1 = images[:,:300,:,:,:]
-            output1 = model(images1)
-            images2 = images[:,300:,:,:,:]
-            output2 = model(images2)
-            output = torch.cat((output1,output2),1)
+            # images1 = images[:,:300,:,:,:]
+            # output1 = model(images1)
+            # images2 = images[:,300:,:,:,:]
+            # output2 = model(images2)
+            # output = torch.cat((output1,output2),1)
+            output = model(images)
             loss = criterion(output, target)
 
         logits = torch.sigmoid(output)

@@ -202,4 +202,4 @@ class HRNet8:
         FUSE_METHOD = 'SUM'
 
     class DATASET:
-        NUM_CLASSES = 32
+        NUM_CLASSES = 8
