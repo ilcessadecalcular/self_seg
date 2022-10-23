@@ -49,7 +49,7 @@ class MedData_train_flow(torch.utils.data.Dataset):
     def normalize_hu(self,image):
         # 将输入图像的像素值(200 ~ 600)归一化到0~1之间
         MIN_BOUND = 200
-        MAX_BOUND = 600
+        MAX_BOUND = 500
         image = (image - MIN_BOUND) / (MAX_BOUND - MIN_BOUND)
         image[image > 1] = 1.
         image[image < 0] = 0.

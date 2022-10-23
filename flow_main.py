@@ -197,7 +197,7 @@ def main(args):
 
     from model.twoD_flow.cnnflowNet import get_seg_model
     from model.twoD_flow.config import HRNet8
-    model = get_seg_model(HRNet8, mid_channels=HRNet8.DATASET.NUM_CLASSES, num_blocks=50, out_channels=1).to(device)
+    model = get_seg_model(HRNet8, mid_channels=HRNet8.DATASET.NUM_CLASSES, num_blocks=100, out_channels=1).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
