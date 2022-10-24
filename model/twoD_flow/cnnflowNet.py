@@ -63,10 +63,10 @@ class cnnflowNet(nn.Module):
         # last
         self.last = nn.Sequential(
             nn.Conv2d(mid_channels * 2 , mid_channels, 3, 1, 1),
-            BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
+            # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             nn.Conv2d(mid_channels, mid_channels, 3, 1, 1),
-            BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
+            # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             nn.Conv2d(mid_channels, out_channels, 3, 1, 1),
         )
