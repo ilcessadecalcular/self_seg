@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_onlyunet16',
+    parser.add_argument('--output_dir', default='./output_dir_rnnunet8',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_onlyunet16',
+    parser.add_argument('--log_dir', default='./output_dir_rnnunet8',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -199,8 +199,11 @@ def main(args):
     # from model.twoD.config import HRNet8
     # model = get_seg_model(HRNet8, in_feat=HRNet8.DATASET.NUM_CLASSES).to(device)
 
-    from model.twoD.unet.unet_model import get_seg_model
-    model = get_seg_model(n_channels=1 , n_classes=1 )
+    # from model.twoD.unet.unet_model import get_seg_model
+    # model = get_seg_model(n_channels=1 , n_classes=1 ).to(device)
+
+    from model.twoD_rnn.cnnrnnNet import cnnrnnNet
+    model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
