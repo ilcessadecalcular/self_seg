@@ -6,12 +6,8 @@ import cv2
 
 
 
-from model.twoD_rnn.backbone_utils import flow_warp, ResidualBlockNoBN, make_layer
+from model.twoD_rnn.backbone_utils import ResidualBlockNoBN, make_layer
 from model.twoD_rnn.unet.unet_model import OnlyUnet
-from model.twoD_flow.bn_helper import BatchNorm2d,  BatchNorm2d_class, relu_inplace
-
-BN_MOMENTUM = 0.1
-ALIGN_CORNERS = None
 
 class cnnrnnNet(nn.Module):
     """BasicVSR network structure for video super-resolution.
@@ -50,7 +46,7 @@ class cnnrnnNet(nn.Module):
 
         # last
         self.last = nn.Sequential(
-            nn.Conv2d(self.n_classes * 2 , self.n_classes, 3, 1, 1),
+            nn.Conv2d(self.n_classes * 2 , self.n_classes * 2, 3, 1, 1),
             # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             nn.Conv2d(self.n_classes * 2 , self.n_classes , 3, 1, 1),

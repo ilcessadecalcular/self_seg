@@ -52,19 +52,3 @@ class OnlyUnet(nn.Module):
         real_out = out.unsqueeze(0)
 
         return real_out
-
-    def init_weights(self):
-        #logger.info('=> init weights from normal distribution')
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.normal_(m.weight, std = 0.01)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-
-
-def get_seg_model(n_channels, n_classes, bilinear=False, **kwargs):
-    model = OnlyUnet(n_channels, n_classes, bilinear=False, **kwargs)
-    model.init_weights()
-
-    return model

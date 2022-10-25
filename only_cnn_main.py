@@ -200,10 +200,10 @@ def main(args):
     # model = get_seg_model(HRNet8, in_feat=HRNet8.DATASET.NUM_CLASSES).to(device)
 
     # from model.twoD.unet.unet_model import get_seg_model
-    # model = get_seg_model(n_channels=1 , n_classes=1 ).to(device)
+    # model = get_seg_model(n_channels=1 , n_classes=1 )
 
     from model.twoD_rnn.cnnrnnNet import cnnrnnNet
-    model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20).to(device)
+    model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -245,9 +245,9 @@ def main(args):
 
 
     from util.loss_function import SoftDiceLoss, BCELoss2d,DiceCeloss
-    criterion = DiceCeloss()
+    # criterion = DiceCeloss()
     # criterion = SoftDiceLoss()
-    # criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
     misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)
