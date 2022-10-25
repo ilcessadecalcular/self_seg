@@ -44,7 +44,7 @@ def get_args_parser():
                         help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
 
     parser.add_argument('--epochs', default=200, type=int)
-    parser.add_argument('--accum_iter', default=1, type=int,
+    parser.add_argument('--accum_iter', default=5, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
 
@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_onlyhrnet32',
+    parser.add_argument('--output_dir', default='./output_dir_onlyunet16',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_onlyhrnet32',
+    parser.add_argument('--log_dir', default='./output_dir_onlyunet16',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
