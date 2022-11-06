@@ -9,6 +9,8 @@ import cv2
 from model.twoD_rnn.backbone_utils import ResidualBlockNoBN, make_layer
 from model.twoD_rnn.unet.unet_model import OnlyUnet
 
+
+
 class cnnrnnNet(nn.Module):
     """BasicVSR network structure for video super-resolution.
 
@@ -48,11 +50,13 @@ class cnnrnnNet(nn.Module):
         self.last = nn.Sequential(
             nn.Conv2d(self.n_classes * 2 , self.n_classes * 2, 3, 1, 1),
             # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
+            nn.BatchNorm2d(self.n_classes * 2),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             nn.Conv2d(self.n_classes * 2 , self.n_classes , 3, 1, 1),
             # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
+            nn.BatchNorm2d(self.n_classes),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
-            nn.Conv2d(self.n_classes, self.n_classes, 3, 1, 1),
+            nn.Conv2d(self.n_classes, 1, 3, 1, 1),
         )
 
         self.fusion = nn.Conv2d(
@@ -116,10 +120,17 @@ class cnnrnnNet(nn.Module):
             # upsampling given the backward and forward features
             out = torch.cat([outputs[i], feat_prop], dim=1)
             out = self.lrelu(self.fusion(out))
-            out = self.last(out)
-            outputs[i] = out
+            # out = self.last(out)
+            # outputs[i] = out
 
-        return torch.stack(outputs, dim=1)
+            outputs[i] = out
+            midput = torch.stack(outputs, dim =1)
+
+        x = midput[0,:,:,:,:]
+        real_output = self.last(x)
+        return real_output.unsqueeze(0)
+
+        # return torch.stack(outputs, dim=1)
 
     def init_weights(self):
         #logger.info('=> init weights from normal distribution')

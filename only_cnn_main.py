@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_rnnunet8',
+    parser.add_argument('--output_dir', default='./output_dir_rnnunet8_1',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_rnnunet8',
+    parser.add_argument('--log_dir', default='./output_dir_rnnunet8_1',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -203,7 +203,7 @@ def main(args):
     # model = get_seg_model(n_channels=1 , n_classes=1 )
 
     from model.twoD_rnn.cnnrnnNet import cnnrnnNet
-    model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20)
+    model = cnnrnnNet(n_channels = 1,n_classes = 16,bilinear = False, num_blocks = 10)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -245,9 +245,9 @@ def main(args):
 
 
     from util.loss_function import SoftDiceLoss, BCELoss2d,DiceCeloss
-    # criterion = DiceCeloss()
+    criterion = DiceCeloss()
     # criterion = SoftDiceLoss()
-    criterion = torch.nn.BCEWithLogitsLoss()
+    # criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
     misc.load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer, loss_scaler=loss_scaler)

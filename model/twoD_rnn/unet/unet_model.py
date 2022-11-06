@@ -20,7 +20,7 @@ class UNet(nn.Module):
         self.up2 = Up(128, 64 // factor, bilinear)
         self.up3 = Up(64, 32 // factor, bilinear)
         self.up4 = Up(32, 16, bilinear)
-        self.outc = OutConv(16, n_classes)
+        # self.outc = OutConv(16, n_classes)
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -32,8 +32,10 @@ class UNet(nn.Module):
         x = self.up2(x, x3)
         x = self.up3(x, x2)
         x = self.up4(x, x1)
-        logits = self.outc(x)
-        return logits
+
+        return x
+        # logits = self.outc(x)
+        # return logits
 
 
 class OnlyUnet(nn.Module):
