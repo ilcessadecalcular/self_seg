@@ -97,8 +97,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 @torch.no_grad()
 def evaluate(data_loader, model, device):
     from util.loss_function import SoftDiceLoss, BCELoss2d,DiceCeloss
-    # criterion = SoftDiceLoss()
-    criterion = DiceCeloss()
+    criterion = SoftDiceLoss()
+    # criterion = DiceCeloss()
     # criterion = torch.nn.BCEWithLogitsLoss()
 
     metric_logger = misc.MetricLogger(delimiter="  ")

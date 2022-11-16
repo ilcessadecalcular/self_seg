@@ -51,11 +51,13 @@ class cnnrnnNet(nn.Module):
             nn.Conv2d(self.n_classes * 2 , self.n_classes * 2, 3, 1, 1),
             # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.BatchNorm2d(self.n_classes * 2),
-            nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            # nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(self.n_classes * 2 , self.n_classes , 3, 1, 1),
             # BatchNorm2d(mid_channels, momentum=BN_MOMENTUM),
             nn.BatchNorm2d(self.n_classes),
-            nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            # nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(self.n_classes, 1, 3, 1, 1),
         )
 
@@ -63,7 +65,8 @@ class cnnrnnNet(nn.Module):
             self.n_classes * 4, self.n_classes * 2, 1, 1, 0, bias=True)
 
         # activation function
-        self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+        # self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
+        self.lrelu = nn.ReLU(inplace=True)
 
 
     def compute_feature(self, lrs_array):
