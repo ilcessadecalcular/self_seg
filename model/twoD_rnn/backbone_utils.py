@@ -53,7 +53,7 @@ class ResidualBlockNoBN(nn.Module):
         # out = self.ln1(out)
         # out = self.relu(out)
         # out = self.conv2(out)
-        # # out = self.ln2(out)
+        # out = self.ln2(out)
 
 
         return identity + out * self.res_scale

@@ -44,7 +44,7 @@ def get_args_parser():
                         help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
 
     parser.add_argument('--epochs', default=200, type=int)
-    parser.add_argument('--accum_iter', default=25, type=int,
+    parser.add_argument('--accum_iter', default=10, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
 
@@ -109,7 +109,7 @@ def get_args_parser():
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--resume', default='',
+    parser.add_argument('--resume', default='output_dir_rnnunet16_3/checkpoint-420.pth',
                         help='resume from checkpoint')
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
