@@ -102,9 +102,9 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_3dunet16_1',
+    parser.add_argument('--output_dir', default='./output_dir_rnnunet8',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_3dunet16_1',
+    parser.add_argument('--log_dir', default='./output_dir_rnnunet8',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -205,9 +205,6 @@ def main(args):
     from model.twoD_rnn.cnnrnnNet import cnnrnnNet
     model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20).to(device)
 
-    from model.threeD.unet3d import get_seg_model
-    model = get_seg_model(in_channels=1, out_channels=1, init_features=16).to(device)
-
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
         print("Continue train checkpoint from: %s" % args.resume)
@@ -278,7 +275,7 @@ def main(args):
                 args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
                 loss_scaler=loss_scaler, epoch=epoch)
 
-        test_stats = evaluate(data_loader_val, model, device,args.crop_size)
+        test_stats = evaluate(data_loader_val, model, device)
         print(f"Dice of the network on the {len(dataset_val)} test images: {test_stats['dice']:.3f}%")
         max_dice = max(max_dice, test_stats["dice"])
         print(f'Max dice: {max_dice:.3f}%')

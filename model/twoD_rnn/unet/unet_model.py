@@ -20,7 +20,7 @@ class UNet(nn.Module):
         self.up2 = Up(128, 64 // factor, bilinear)
         self.up3 = Up(64, 32 // factor, bilinear)
         self.up4 = Up(32, 16, bilinear)
-        self.outc = OutConv(16, n_classes)
+        # self.outc = OutConv(16, n_classes)
 
     def forward(self, x):
         x1 = self.inc(x)
@@ -32,8 +32,10 @@ class UNet(nn.Module):
         x = self.up2(x, x3)
         x = self.up3(x, x2)
         x = self.up4(x, x1)
-        logits = self.outc(x)
-        return logits
+
+        return x
+        # logits = self.outc(x)
+        # return logits
 
 
 class OnlyUnet(nn.Module):
@@ -52,19 +54,3 @@ class OnlyUnet(nn.Module):
         real_out = out.unsqueeze(0)
 
         return real_out
-
-    def init_weights(self):
-        #logger.info('=> init weights from normal distribution')
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.normal_(m.weight, std = 0.01)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-
-
-def get_seg_model(n_channels, n_classes, bilinear=False, **kwargs):
-    model = OnlyUnet(n_channels, n_classes, bilinear=False, **kwargs)
-    model.init_weights()
-
-    return model
