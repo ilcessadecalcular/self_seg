@@ -20,6 +20,7 @@ from util.datafunction import z_norm,normalize_hu
 import util.misc as misc
 import util.lr_sched as lr_sched
 from util.crop import rand_crop_onlycnn
+from util.generator import generator
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -95,7 +96,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(data_loader, model, device):
+def evaluate(data_loader, model, device,crop_size):
     from util.loss_function import SoftDiceLoss, BCELoss2d,DiceCeloss
     # criterion = SoftDiceLoss()
     criterion = DiceCeloss()
@@ -121,7 +122,11 @@ def evaluate(data_loader, model, device):
             # images2 = images[:,300:,:,:,:]
             # output2 = model(images2)
             # output = torch.cat((output1,output2),1)
-            output = model(images)
+
+            # output = model(images)
+
+            output= generator(model,images,crop_size)
+
             loss = criterion(output, target)
 
         logits = torch.sigmoid(output)
