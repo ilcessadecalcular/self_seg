@@ -47,7 +47,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
 
-        samples, targets = rand_crop_onlycnn(samples, targets,crop_size)
+        # samples, targets = rand_crop_onlycnn(samples, targets,crop_size)
 
         samples = samples.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
@@ -123,7 +123,7 @@ def evaluate(data_loader, model, device,crop_size):
             # output2 = model(images2)
             # output = torch.cat((output1,output2),1)
 
-            # output = model(images)
+            #output = model(images)
 
             output= generator(model,images,crop_size)
 

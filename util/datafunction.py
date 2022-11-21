@@ -6,11 +6,52 @@ import numpy as np
 import cv2
 
 class MedData_train_onlycnn(torch.utils.data.Dataset):
+    def __init__(self, source_dir, label_dir, crop_size):
+        self.source_dir = source_dir
+        self.label_dir = label_dir
+        self.patient_dir = os.listdir(label_dir)
+        self.crop_size = crop_size
+        # self.crop_size = crop_size
+
+    def __len__(self):
+        return len(self.patient_dir)
+
+    def znorm(self, image):
+        mn = image.mean()
+        sd = image.std()
+        return (image - mn) / sd
+
+    def rand_crop_onlycnn(self,image, label, crop_size):
+        t, _, _, _ = label.size()
+        new_t = random.randint(0, t - crop_size)
+
+        image = image[new_t: new_t + crop_size, :, :, :]
+        label = label[new_t: new_t + crop_size, :, :, :]
+        return image, label
+
+    def __getitem__(self, index):
+        patient = self.patient_dir[index]
+        source_path = os.path.join(self.source_dir, patient)
+        label_path = os.path.join(self.label_dir,patient)
+        image_source = sitk.ReadImage(source_path)
+        source_array = sitk.GetArrayFromImage(image_source)
+        image_label = sitk.ReadImage(label_path)
+        label_array = sitk.GetArrayFromImage(image_label)
+        znorm_source_array = self.znorm(source_array)
+        # crop_source_array, crop_label_array = self.rand_crop(znorm_source_arrary,label_array)
+        out_source_array = znorm_source_array[:, np.newaxis]
+        out_source_array = torch.FloatTensor(out_source_array)
+        out_label_array = label_array[:, np.newaxis]
+        out_label_array = torch.FloatTensor(out_label_array)
+        out_source_array, out_label_array = self.rand_crop_onlycnn(out_source_array,out_label_array,self.crop_size)
+        return out_source_array,out_label_array
+
+class MedData_val_onlycnn(torch.utils.data.Dataset):
     def __init__(self, source_dir, label_dir):
         self.source_dir = source_dir
         self.label_dir = label_dir
         self.patient_dir = os.listdir(label_dir)
-        # self.crop_size = crop_size
+
 
     def __len__(self):
         return len(self.patient_dir)
@@ -29,12 +70,12 @@ class MedData_train_onlycnn(torch.utils.data.Dataset):
         image_label = sitk.ReadImage(label_path)
         label_array = sitk.GetArrayFromImage(image_label)
         znorm_source_array = self.znorm(source_array)
-        # crop_source_array, crop_label_array = self.rand_crop(znorm_source_arrary,label_array)
         out_source_array = znorm_source_array[:, np.newaxis]
         out_source_array = torch.FloatTensor(out_source_array)
         out_label_array = label_array[:, np.newaxis]
         out_label_array = torch.FloatTensor(out_label_array)
         return out_source_array,out_label_array
+
 
 class MedData_train_flow(torch.utils.data.Dataset):
     def __init__(self, source_dir, label_dir):

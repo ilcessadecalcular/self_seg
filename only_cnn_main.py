@@ -29,7 +29,7 @@ from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 import util.lr_decay as lrd
 import util.misc as misc
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
-from util.datafunction import MedData_train_onlycnn
+from util.datafunction import MedData_train_onlycnn,MedData_val_onlycnn
 
 from only_cnn_engine import train_one_epoch, evaluate
 import timm.optim.optim_factory as optim_factory
@@ -44,7 +44,7 @@ def get_args_parser():
                         help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
 
     parser.add_argument('--epochs', default=200, type=int)
-    parser.add_argument('--accum_iter', default=5, type=int,
+    parser.add_argument('--accum_iter', default=10, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
 
@@ -102,14 +102,14 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_rnnunet8',
+    parser.add_argument('--output_dir', default='./output_dir_rnnunet16_3',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_rnnunet8',
+    parser.add_argument('--log_dir', default='./output_dir_rnnunet16_3',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--resume', default='',
+    parser.add_argument('--resume', default='output_dir_rnnunet16_3/checkpoint-600.pth',
                         help='resume from checkpoint')
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
@@ -150,8 +150,8 @@ def main(args):
 
     cudnn.benchmark = True
 
-    dataset_train = MedData_train_onlycnn(args.train_source_dir,args.train_label_dir)
-    dataset_val = MedData_train_onlycnn(args.valid_source_dir,args.valid_label_dir)
+    dataset_train = MedData_train_onlycnn(args.train_source_dir,args.train_label_dir,args.crop_size)
+    dataset_val = MedData_val_onlycnn(args.valid_source_dir,args.valid_label_dir)
 
     if True:  # args.distributed:
         num_tasks = misc.get_world_size()
@@ -189,7 +189,7 @@ def main(args):
 
     data_loader_val = torch.utils.data.DataLoader(
         dataset_val, sampler=sampler_val,
-        batch_size=args.batch_size,
+        batch_size=1,
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
         drop_last=False
@@ -203,7 +203,10 @@ def main(args):
     # model = get_seg_model(n_channels=1 , n_classes=1 ).to(device)
 
     from model.twoD_rnn.cnnrnnNet import cnnrnnNet
-    model = cnnrnnNet(n_channels = 1,n_classes = 1,bilinear = False, num_blocks = 20).to(device)
+    model = cnnrnnNet(n_channels = 1,n_classes = 16,bilinear = False, num_blocks = 40).to(device)
+
+    #from model.threeD.unet3d import get_seg_model
+    #model= get_seg_model(in_channels = 1, out_channels = 1, init_features = 32).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -245,8 +248,8 @@ def main(args):
 
 
     from util.loss_function import SoftDiceLoss, BCELoss2d,DiceCeloss
-    criterion = DiceCeloss()
-    # criterion = SoftDiceLoss()
+    # criterion = DiceCeloss()
+    criterion = SoftDiceLoss()
     # criterion = torch.nn.BCEWithLogitsLoss()
     print("criterion = %s" % str(criterion))
 
@@ -275,7 +278,7 @@ def main(args):
                 args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
                 loss_scaler=loss_scaler, epoch=epoch)
 
-        test_stats = evaluate(data_loader_val, model, device)
+        test_stats = evaluate(data_loader_val, model, device,args.crop_size)
         print(f"Dice of the network on the {len(dataset_val)} test images: {test_stats['dice']:.3f}%")
         max_dice = max(max_dice, test_stats["dice"])
         print(f'Max dice: {max_dice:.3f}%')
