@@ -123,9 +123,9 @@ def evaluate(data_loader, model, device,crop_size):
             # output2 = model(images2)
             # output = torch.cat((output1,output2),1)
 
-            #output = model(images)
+            output = model(images)
 
-            output= generator(model,images,crop_size)
+            # output= generator(model,images,crop_size)
 
             loss = criterion(output, target)
 

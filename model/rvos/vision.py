@@ -25,7 +25,7 @@ class ResNet50(ResNet):
     """Returns intermediate features from ResNet-50"""
     def __init__(self):
         super(ResNet50,self).__init__(Bottleneck, [3, 4, 6, 3], 1000)
-        self.conv1 = nn.Conv2d(1, self.inplanes, kernel_size = 7, stride = 2, padding = 3, bias = False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size = 7, stride = 2, padding = 3, bias = False)
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
@@ -42,7 +42,7 @@ class ResNet34(ResNet):
     """Returns intermediate features from ResNet-34"""
     def __init__(self):
         super(ResNet34,self).__init__(BasicBlock, [3, 4, 6, 3], 1000)
-        self.conv1 = nn.Conv2d(1, self.inplanes, kernel_size = 7, stride = 2, padding = 3, bias = False)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size = 7, stride = 2, padding = 3, bias = False)
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)

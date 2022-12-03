@@ -44,7 +44,7 @@ def get_args_parser():
                         help='Batch size per GPU (effective batch size is batch_size * accum_iter * # gpus')
 
     parser.add_argument('--epochs', default=200, type=int)
-    parser.add_argument('--accum_iter', default=10, type=int,
+    parser.add_argument('--accum_iter', default=1, type=int,
                         help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
 
 
@@ -102,14 +102,14 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_rnnunet16_3',
+    parser.add_argument('--output_dir', default='./output_dir_3dunet8_1',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_rnnunet16_3',
+    parser.add_argument('--log_dir', default='./output_dir_3dunet8_1',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--resume', default='output_dir_rnnunet16_3/checkpoint-600.pth',
+    parser.add_argument('--resume', default='',
                         help='resume from checkpoint')
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
@@ -202,11 +202,11 @@ def main(args):
     # from model.twoD.unet.unet_model import get_seg_model
     # model = get_seg_model(n_channels=1 , n_classes=1 ).to(device)
 
-    from model.twoD_rnn.cnnrnnNet import cnnrnnNet
-    model = cnnrnnNet(n_channels = 1,n_classes = 16,bilinear = False, num_blocks = 40).to(device)
+    # from model.twoD_rnn.cnnrnnNet import cnnrnnNet
+    # model = cnnrnnNet(n_channels = 1,n_classes = 16,bilinear = False, num_blocks = 40).to(device)
 
-    #from model.threeD.unet3d import get_seg_model
-    #model= get_seg_model(in_channels = 1, out_channels = 1, init_features = 32).to(device)
+    from model.threeD.unet3d import get_seg_model
+    model= get_seg_model(in_channels = 1, out_channels = 1, init_features = 8).to(device)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')

@@ -10,7 +10,17 @@ import math
 from .vision import VGG16, ResNet34, ResNet50, ResNet101
 import sys
 sys.path.append("..")
-from utils.utils import get_skip_dims
+# from tools.utils import get_skip_dims
+
+def get_skip_dims(model_name):
+    if model_name == 'resnet50' or model_name == 'resnet101':
+        skip_dims_in = [2048,1024,512,256,64]
+    elif model_name == 'resnet34':
+        skip_dims_in = [512,256,128,64,64]
+    elif model_name =='vgg16':
+        skip_dims_in = [512,512,256,128,64]
+
+    return skip_dims_in
 
 class FeatureExtractor(nn.Module):
     '''
@@ -167,9 +177,9 @@ class RSIS(nn.Module):
 
         return out_mask, hidden_list
         
-class Rvos(nn.Module):
-    def __int__(self,args):
-        super().__init__()
+class Rvosnet(nn.Module):
+    def __init__(self,args):
+        super(Rvosnet, self).__init__()
 
         self.encoder = FeatureExtractor(args)
         self.decoder = RSIS(args)
