@@ -31,7 +31,7 @@ import util.misc as misc
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
 from util.datafunction import MedData_train_onlycnn,MedData_val_onlycnn
 
-from only_cnn_engine import train_one_epoch, evaluate
+from only_rvos_engine import train_one_epoch, evaluate
 import timm.optim.optim_factory as optim_factory
 
 
@@ -102,14 +102,14 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_rvos',
+    parser.add_argument('--output_dir', default='./output_dir_rvos50',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_rvos',
+    parser.add_argument('--log_dir', default='./output_dir_rvos50',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--resume', default='',
+    parser.add_argument('--resume', default='output_dir_rvos50/checkpoint-180.pth',
                         help='resume from checkpoint')
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
@@ -136,7 +136,7 @@ def get_args_parser():
     # rvos parameters
     parser.add_argument('--cpu', dest = 'use_gpu', action = 'store_false')
     parser.set_defaults(use_gpu = True)
-    parser.add_argument('-base_model', dest = 'base_model', default = 'resnet34',
+    parser.add_argument('-base_model', dest = 'base_model', default = 'resnet50',
                         choices = ['resnet101', 'resnet50', 'resnet34', 'vgg16'])
     parser.add_argument('-skip_mode', dest = 'skip_mode', default = 'concat',
                         choices = ['sum', 'concat', 'mul', 'none'])
