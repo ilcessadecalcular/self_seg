@@ -102,14 +102,14 @@ def get_args_parser():
                         help='valid source dir path')
     parser.add_argument('--valid_label_dir', default='valid/label', type=str,
                         help='valid label dir path')
-    parser.add_argument('--output_dir', default='./output_dir_rvos50',
+    parser.add_argument('--output_dir', default='./output_dir_rvos_new34',
                         help='path where to save, empty for no saving')
-    parser.add_argument('--log_dir', default='./output_dir_rvos50',
+    parser.add_argument('--log_dir', default='./output_dir_rvos_new34',
                         help='path where to tensorboard log')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=0, type=int)
-    parser.add_argument('--resume', default='output_dir_rvos50/checkpoint-180.pth',
+    parser.add_argument('--resume', default='',
                         help='resume from checkpoint')
 
     parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
@@ -136,7 +136,7 @@ def get_args_parser():
     # rvos parameters
     parser.add_argument('--cpu', dest = 'use_gpu', action = 'store_false')
     parser.set_defaults(use_gpu = True)
-    parser.add_argument('-base_model', dest = 'base_model', default = 'resnet50',
+    parser.add_argument('-base_model', dest = 'base_model', default = 'resnet34',
                         choices = ['resnet101', 'resnet50', 'resnet34', 'vgg16'])
     parser.add_argument('-skip_mode', dest = 'skip_mode', default = 'concat',
                         choices = ['sum', 'concat', 'mul', 'none'])
@@ -220,7 +220,7 @@ def main(args):
     #from model.threeD.unet3d import get_seg_model
     #model= get_seg_model(in_channels = 1, out_channels = 1, init_features = 32).to(device)
 
-    from model.rvos.model import Rvosnet
+    from model.rvos_new.model import Rvosnet
     model = Rvosnet(args).to(device)
 
     if args.resume:

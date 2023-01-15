@@ -19,8 +19,8 @@ class ConvLSTMCell(nn.Module):
     def forward(self, input_, hidden_state_temporal):
 
         # get batch and spatial sizes
-        # batch_size = input_.data.size()[0]
-        # spatial_size = input_.data.size()[2:]
+        batch_size = input_.data.size()[0]
+        spatial_size = input_.data.size()[2:]
 
         # # generate empty prev_state, if None is provided
         # if prev_state_spatial is None:
@@ -36,12 +36,18 @@ class ConvLSTMCell(nn.Module):
         #             Variable(torch.zeros(state_size))
         #         )
                 
-        # if hidden_state_temporal is None:
-        #     state_size = [batch_size, self.hidden_size] + list(spatial_size)
-        #     if self.use_gpu:
-        #         hidden_state_temporal = Variable(torch.zeros(state_size)).cuda()
-        #     else:
-        #         hidden_state_temporal = Variable(torch.zeros(state_size))
+        if hidden_state_temporal is None:
+            state_size = [batch_size, self.hidden_size] + list(spatial_size)
+            if self.use_gpu:
+                hidden_state_temporal = (
+                    Variable(torch.zeros(state_size)).cuda(),
+                    Variable(torch.zeros(state_size)).cuda()
+                )
+            else:
+                hidden_state_temporal = (
+                    Variable(torch.zeros(state_size)),
+                    Variable(torch.zeros(state_size))
+                )
 
         # state_size = [batch_size, self.hidden_size] + list(spatial_size)
         # hidden_state_temporal = Variable(torch.zeros(state_size)).cuda()

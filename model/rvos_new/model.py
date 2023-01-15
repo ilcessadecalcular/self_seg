@@ -144,7 +144,12 @@ class RSIS(nn.Module):
             #     else:
             #         state = self.clstm_list[i](clstm_in, prev_state_spatial[i], prev_hidden_temporal[i])
 
-            state = self.clstm_list[i](clstm_in, prev_hidden_temporal[i])
+            if prev_hidden_temporal is None:
+                state = self.clstm_list[i](clstm_in, None)
+
+            else:
+                state = self.clstm_list[i](clstm_in, prev_hidden_temporal[i])
+            # state = self.clstm_list[i](clstm_in, prev_hidden_temporal[i])
 
             hidden_list.append(state)
             hidden = state[0]
